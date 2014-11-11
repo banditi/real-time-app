@@ -220,7 +220,7 @@ $(document).ready(function () {
     };
 
     /**
-     * Blink color (':') each 0.5 second
+     * Blink colon (':') each 0.5 second
      */
     var _blickColon = function () {
       var tmpTime = geoData.time;
