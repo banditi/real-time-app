@@ -1,0 +1,41 @@
+/*@keyframes spinningEarth {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes spinningEarth {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#timeOfDay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 200%;
+  background: url(../../images/timeOfDay.jpg) no-repeat center;
+  -webkit-animation: spinningEarth 86400s infinite linear;
+  animation: spinningEarth 86400s infinite linear;
+}*/
+
+body {
+  background-color: whitesmoke;
+}
+
+#loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 6px;
+  width: 0px;
+  background-color: lightblue;
+  display: none;
+}

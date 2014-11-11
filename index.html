@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" prefix="og: http://ogp.me/ns#">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Real Time App</title>
@@ -9,19 +9,28 @@
   <![endif]-->
   <meta name="author" content="Banditi">
   <meta name="description" content="Real Time App">
-  <meta property="og:title" content="localhost">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="//">
-  <!-- <meta property="og:image" content="http://master-igor.com/src/images/title.png"> -->
   <link rel="icon" type="image/x-icon" href="./src/images/favicon.ico">
   <link rel="stylesheet" href="./assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="./src/css/style.css">
 </head>
 <body>
-  <div id="timeOfDay"></div>
+  <div id="loading"></div>
+
+  <div class="container">
+    <h2>
+      <span>Time: </span>
+      <span id="currTime"></span>
+    </h2>
+    <h2>
+      <span>Location: </span>
+      <span id="currLoc"></span>
+    </h2>
+  </div>
+  
 
   <script src="./assets/jquery/js/jquery-2.1.1.min.js"></script>
   <script src="./assets/bootstrap/js/bootstrap.min.js"></script>
+  <script src="./src/js/init.js"></script>
   <script src="./src/js/main.js"></script>
 </body>
 </html>
