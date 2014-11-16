@@ -12,10 +12,10 @@ $(document).ready(function () {
      * DOM Objects
      * @type {Object}
      */
-    var $body = $("body"),
+    var $body,
+        $loading,
         $day,
         $night,
-        $loading = $("<div id='loading'></div>"),
         $currTime,
         $currLoc,
         $currWeather,
@@ -26,7 +26,7 @@ $(document).ready(function () {
         $searchBtn,
         $vleuger,
         $answer,
-        $pictures;
+        $clouds;
 
     /**
      * Other variabels
@@ -35,17 +35,24 @@ $(document).ready(function () {
     var _geoData = {},
         _cacheSpeech = [],
         _incInterval,
+        _incClouds,
         _availableSpeech = {
           can: false,
         },
         speech,
+        _loading = {
+          sum: 0,
+          count: 4,
+        },
         _availableBrowserSpeech,
         _weatherInterval,
+        _nextSecond = true,
         _stop = true,
         _debug = false,
         _googleAPIKey = "AIzaSyDIffw8pbKUFH9dv2VGC30WLsjpY1lrAdo",
         _weatherAPIKey = "ee072e7e3641f40d939047490464803b",
-        _forecastAPIKey = "f48afb37d55582c0dfdacca52b6b9b39";
+        _forecastAPIKey = "f48afb37d55582c0dfdacca52b6b9b39",
+        _windowWidth = $(window).outerWidth();
 
     /**
      * CONSTS
@@ -172,13 +179,35 @@ $(document).ready(function () {
           {
             phrase: "With best wishes, Chrome!",
           },
+          {
+            phrase: "Hey! Chin up!",
+          }, 
+          {
+            phrase: ""
+          }
         ];
 
     /**
      * Initializing of RTAPP
-     * TODO:: speak all.
+     * TODO:: save configuration
      */
     var _init = function () {
+
+      $body = $("body");
+      $loading = $("#loading");
+
+      Object.observe(_loading, function (changes) {
+        changes.forEach(function (change) {
+          if (change.object.sum == change.object.count) {
+            setTimeout(function () {
+              RTAPP.info("RTAPP is initialized.", "init");
+              $loading.animate({
+                "height": "6px",
+              }, 500);
+            }, 1000);
+          }
+        });
+      });
 
       $currLoc = $("#currLoc");
       $currTime = $("#currTime");
@@ -187,19 +216,17 @@ $(document).ready(function () {
       $moon = $("#moon");
       $vleuger = $("#vleuger");
       $answer = $("#answer");
-      $pictures = $("#pictures");
       $day = $("#day");
       $night = $("#night");
+      $clouds = $("#clouds");
 
-      $loading.prependTo($body).hide();
-      $loading.animate({width: "25%"}, 200);
 
       RTAPP.clear();
-      $loading.show(200);
+      ++_loading.sum;
 
       if (navigator.geolocation) {
         var options = {
-          timeout: 10000,
+          timeout: 100000,
         };
 
         navigator.geolocation.getCurrentPosition(
@@ -211,13 +238,9 @@ $(document).ready(function () {
         RTAPP.error("Geolocation is not supported by this browser.", "initGeo");
         return;
       }
+      _incInterval = setInterval(_increaseTime, 500);
 
-      _availableBrowserSpeech = ('speechSynthesis' in window);
-      if (!_availableBrowserSpeech) {
-        $("#mute").data("mute") = false;
-        $("#mute").find(".glyphicon").removeClass("glyphicon-volume-up")
-          .addClass("glyphicon-volume-off");
-      }
+
       Object.observe(_availableSpeech, function (changes) {
         changes.forEach(function (change) {
           if (!change.oldValue && _cacheSpeech.length > 0) {
@@ -230,18 +253,16 @@ $(document).ready(function () {
 
       Object.observe(_cacheSpeech, function (changes) {
         changes.forEach(function (change) {
-          if (change.type == "add" && 
-              _cacheSpeech.length == 1
-              ) {
+          // console.log(change, _cacheSpeech);
+          if (change.type == "add" && change.name == "0") {
             _availableSpeech.can = true;
           }
-            // console.log(change);
         });
       });
+      _availableBrowserSpeech = ('speechSynthesis' in window);
 
-      RTAPP.speak("Hi! You are welcomed by Real Time App.");
+      RTAPP.speak("Hallo! You are welcomed by Real Time App.");
 
-      _incInterval = setInterval(_increaseTime, 500);
       _weatherInterval = setInterval(_setWeather, 1800000);
 
       $search = $("#search");
@@ -252,11 +273,23 @@ $(document).ready(function () {
 
       $search.focus();
 
-      RTAPP.info("RTAPP is initialized.", "init");
-      $loading.animate({width: "+=25%"}, 200);
+      ++_loading.sum;
 
-      RTAPP.log(RTAPP.geo, "INIT");
-
+      if (typeof(Storage) !== "undefined") {
+        // _availableSpeech.can = false;
+        if (localStorage.tour == "0" || !localStorage.tour) {
+          $('#RTAppTour').joyride({
+            autoStart : true,
+            modal: true,
+            expose: true,
+            postRideCallback: function (index, tip, abort) {
+              localStorage.tour = "1";
+            },
+          });
+        }
+      } else {
+          RTAPP.log("Sorry! No Web Storage support..", "locStrg");
+      }
 
     };
 
@@ -267,6 +300,12 @@ $(document).ready(function () {
       // console.clear();
 
       RTAPP.stop();
+
+      $loading.animate({
+        "height": "100%",
+      }, 500);
+
+      _loading.sum = 0;
 
       $currTime.text("00:00:00");
       $currLoc.text("Location");
@@ -293,75 +332,29 @@ $(document).ready(function () {
     var _logMessage = function (message, block) {
       block = block || "RTAPP";
       console.log("LOG | %s: %O", block, message);
-      if (_debug) {
-        $alert = $("<div role='alert'></div>")
-          .hide()
-          .addClass("alert alert-success")
-          .text("Success! In block: " + block);
-        $answer.append($alert);
-        $alert.fadeIn(100)
-              .delay(3000)
-              .fadeOut(100, function () {
-                $(this).remove();
-              });
-      }
     };
 
     var _infoMessage = function (message, block) {
       block = block || "RTAPP";
       console.log("INFO | %s: %O", block, message);
-      if (_debug) {
-        $alert = $("<div role='alert'></div>")
-          .hide()
-          .addClass("alert alert-info")
-          .text("Info! In block: " + block);
-        $answer.append($alert);
-        $alert.fadeIn(100)
-              .delay(3000)
-              .fadeOut(100, function () {
-                $(this).remove();
-              });
-      }
     };
 
     var _warnMessage = function (message, block) {
       block = block || "RTAPP";
       console.log("WARNING | %s: %c%O", block, "color: yellow;", message);
-      if (_debug) {
-        $alert = $("<div role='alert'></div>")
-          .hide()
-          .addClass("alert alert-warning")
-          .text("WARNING! In block: " + block);
-        $answer.append($alert);
-        $alert.fadeIn(100)
-              .delay(3000)
-              .fadeOut(100, function () {
-                $(this).remove();
-              });
-      }
     };
 
     var _errorMessage = function (message, block) {
       block = block || "RTAPP";
       console.log("ERROR | %s: %c%O", block, "color: red;", message);
-      if (_debug) {
-        $alert = $("<div role='alert'></div>")
-          .hide()
-          .addClass("alert alert-danger")
-          .text("ERROR! In block: " + block);
-        $answer.append($alert);
-        $alert.fadeIn(100)
-              .delay(3000)
-              .fadeOut(100, function () {
-                $(this).remove();
-              });
-      }
     };
 
     /**
      * Inizialize all listeners
      */
     var _addListener = function () {
+
+      $('[data-toggle="tooltip"]').tooltip();
 
       $search.on("submit", _searchHandler);
 
@@ -377,7 +370,7 @@ $(document).ready(function () {
             _geoData.deg_speed.abbr + "</span></div>",
           title: "Wind",
           html: true,
-          placement: "left",
+          placement: "top",
           trigger: "hover",
         });
       }, function () {
@@ -388,7 +381,7 @@ $(document).ready(function () {
         RTAPP.speak("Current speed of wind is " + _geoData.speed + 
           " meters per second. " + 
           BEAUFORT_SCALE[_geoData.speed_beaufort].full_phase + 
-          "Current direction of wind is " + 
+          " Current direction of wind is " + 
           _geoData.deg_speed.full);
       });
 
@@ -397,10 +390,9 @@ $(document).ready(function () {
           _geoData.city + ". " + _getRandomPhrase());
       });
 
-      // TODO:: add info about city
       $currLoc.on("click", function (event) {
-        RTAPP.speak("Current city is " + _geoData.city + ". " + 
-          _getRandomPhrase());
+        RTAPP.speak("Current city is " + _geoData.city + 
+          ". It is a beautiful city, is not it?");
       });
 
       $("#mute").hover(function () {
@@ -412,30 +404,6 @@ $(document).ready(function () {
           $(this).find(".glyphicon").toggleClass("glyphicon-volume-up glyphicon-volume-off");
         }
       });
-
-      // <button class="btn btn-default btn-lg" id="mute" data-mute="true">
-      //    <span class="glyphicon glyphicon-volume-up" aria-hidden="true"></span>
-      //  </button>
-      // $("#mute").click(function () {
-      //   // if (_availableBrowserSpeech) {
-      //     $(this).find(".glyphicon").toggleClass("glyphicon-volume-up glyphicon-volume-off");
-      //     // console.log($(this).data("mute"));
-      //     if ($(this).data("mute")) {
-      //       _availableBrowserSpeech = false;
-      //       _availableSpeech = false;
-      //       speechSynthesis.cancel();
-      //       _cacheSpeech = [];
-      //     } else {
-      //       _availableBrowserSpeech = ('speechSynthesis' in window);
-      //       _availableSpeech = true;
-      //       if (!_availableBrowserSpeech) {
-      //         $("#mute").find(".glyphicon").removeClass("glyphicon-volume-up")
-      //           .addClass("glyphicon-volume-off");
-      //       }
-      //     }
-      //     $(this).data("mute", _availableBrowserSpeech);
-      //   // }
-      // });
 
       $currWeather.on("click", function () {
         RTAPP.speak("Current temperature in " + _geoData.city + 
@@ -525,7 +493,7 @@ $(document).ready(function () {
                 RTAPP.setCity(val['long_name']);
                 _geoData.city = val['long_name'];
                 stopGeo = true;
-                $loading.animate({width: "+=25%"}, 200);
+                ++_loading.sum;
                 RTAPP.setTimezone();
               }
             });
@@ -569,7 +537,7 @@ $(document).ready(function () {
                 _geoData.latitude = val['geometry']['location']['lat'];
                 _geoData.longitude = val['geometry']['location']['lng'];
                 // _geoData.city = name;
-                RTAPP.info(_geoData, "updData");
+                // RTAPP.info(_geoData, "updData");
               }
             });
             RTAPP.setTimezone();
@@ -625,8 +593,7 @@ $(document).ready(function () {
               setTimeout(function () {
                 RTAPP.setWeather();
               }, 1000);
-              // RTAPP.setPicture();
-              $loading.animate({width: "+=25%"}, 200);
+              ++_loading.sum;
             }
           } catch (err) {
             RTAPP.error(data, "gooTZ");
@@ -638,63 +605,37 @@ $(document).ready(function () {
     };
 
     /**
-     * Get weather from OpenWeatherMap
-     * TODO:: set clouds
+     * Get weather from Yahoo
      */
     var _setWeather = function () {
 
-      /*var _success = function (data) {
-        RTAPP.log(data, "Weather");
-        try {
-          var currTemp = data.main.temp - 273.15;
-          $currWeather.html(
-            "<div class='visible-lg-inline-block center-by-margin'><strong>" + 
-            currTemp.toFixed(2) + " C</strong>" + 
-            "<img src='http://openweathermap.org/img/w/" + 
-            data.weather[0].icon + ".png'></div>"
-            );
-          _geoData.temp = currTemp.toFixed(2);
-          _setWind(data.wind);
-          _analyzeWeather();
-        } catch (err) {
-          RTAPP.error("Something goes wrong..", "Weather");
-        }
-      };*/
-
       var yahooCallback = function (data) {
-        console.log(data);
         try {
-          var currTemp = _f2c(data.query.results.channel.item.condition.temp);
-          currTemp = currTemp.toFixed(1);
-          $currWeather.html(currTemp + " &deg;C");
-          _geoData.temp = currTemp;
-          var sunset = data.query.results.channel.astronomy.sunset.split(/[\s:]/);
-          $(".sunset").text(sunset);
-          if (sunset[2] == "pm") sunset[0] = parseInt(sunset[0]) + 12;
-          _geoData.sunset = sunset[0] + ":" + sunset[1];
-          var sunrise = data.query.results.channel.astronomy.sunrise.split(/[\s:]/);
-          $(".sunrise").text(sunrise);
-          if (sunrise[2] == "pm") sunrise[0] = parseInt(sunrise[0]) + 12;
-          _geoData.sunrise = sunrise[0] + ":" + sunrise[1];
-          _setWind(data.query.results.channel.wind);
-          _analyzeWeather();
-
+          if (!data.query.results) {
+            RTAPP.speak("Sorry! No weather data available for this query. " +
+              "Try other.");
+          } else {
+            var currTemp = _f2c(data.query.results.channel.item.condition.temp);
+            currTemp = currTemp.toFixed(1);
+            $currWeather.html(currTemp + " &deg;C");
+            _geoData.temp = currTemp;
+            var sunset = data.query.results.channel.astronomy.sunset.split(/[\s:]/);
+            $(".sunset").text(sunset);
+            if (sunset[2] == "pm") sunset[0] = parseInt(sunset[0]) + 12;
+            _geoData.sunset = sunset[0] + ":" + sunset[1];
+            var sunrise = data.query.results.channel.astronomy.sunrise.split(/[\s:]/);
+            $(".sunrise").text(sunrise);
+            if (sunrise[2] == "pm") sunrise[0] = parseInt(sunrise[0]) + 12;
+            _geoData.sunrise = sunrise[0] + ":" + sunrise[1];
+            _setWind(data.query.results.channel.wind);
+            _analyzeWeather();
+          }
         } catch (err) {
-
+          RTAPP.error("Something goes wrong!", "yaWea");
         }
       };
 
       if (!_stop) {
-        /*$.ajax({
-          type: "GET",
-          dataType: "json",
-          url: "http://api.openweathermap.org/data/2.5/weather" + 
-          "?lat=" + _geoData.latitude + "&lon=" + _geoData.longitude,
-          success: _success,
-          error: function () {
-            RTAPP.error("Weather");
-          }
-        });*/
 
         $.ajax({
           type: "GET",
@@ -709,6 +650,9 @@ $(document).ready(function () {
 
     };
 
+    /**
+     * Analyze new weather
+     */
     var _analyzeWeather = function () {
 
       var tmpTemp = _geoData.temp;
@@ -725,6 +669,54 @@ $(document).ready(function () {
       RTAPP.speak("Current temperature in " + _geoData.city + 
         " is " + _geoData.temp + " degrees Celsius. " + 
         TEMP[_geoData.temp_phrase].phrase);
+
+      $clouds.html("");
+
+      count = Math.floor((Math.random() * 10) + 3);
+      for (var i = 1; i < count; i++) {
+        _createCloud();
+      }
+
+      _incClouds = setInterval(function () {
+        sp = _geoData.speed * 1.5 + (Math.floor((Math.random() * 2) + 1));
+        $clouds.find("img").animate({
+          left: "+=" + sp +"px",
+        }, 100);
+        $clouds.find("img").each(function (ind, el) {
+          if ( _windowWidth <= parseFloat($(el).css("left").replace("px")) ) {
+            $(el).remove();
+          }
+          if ( _windowWidth <= (parseFloat($(el).css("left").replace("px")) + 
+            $(el).outerWidth() )  && !$(el).hasClass("to-remove") ) {
+            _createCloud($(el).src, -parseFloat($(el).width()), 
+              parseFloat($(el).css("top")));
+            $(el).addClass("to-remove");
+          }
+        });
+      }, 100);
+
+
+    };
+
+    /**
+     * Create cloud by parameters
+     * @param  {String} src [description]
+     * @param  {Float} x   [description]
+     * @param  {Float} y   [description]
+     */
+    var _createCloud = function (src, x, y) {
+      rnd = Math.floor(Math.random() * _windowWidth);
+      x = x || Math.floor((Math.random() * rnd) + 1);
+      y = y || Math.floor((Math.random() * 50) + 5 );
+      src =  src || 
+        "./src/images/cloud-" + Math.floor(Math.random() * 3) + ".png";
+      var id = Math.floor(Math.random() * 10000);
+      // console.log(src, x, y);
+      $img = $("<img src='" + src + "' id='cloud" + id + "'>").css({
+        top: y + "px",
+        left: x + "px",
+      });
+      $clouds.append($img);
 
     };
 
@@ -808,26 +800,6 @@ $(document).ready(function () {
     };
 
     /**
-     * Set picture for current city
-     * TODO:: create this function
-     */
-    var _setPicture = function () {
-
-      if (!_stop) {
-        /*var url1 = "http://maps.googleapis.com/maps/api/streetview" + 
-          "?size=600x300" + 
-          "&location=" + _geoData.city + 
-          "&sensor=false";
-
-        $pictures.append("<img src='" + url1 + "' alt=''>");
-        $pictures.append("<img src='" + url2 + "' alt=''>");
-        $pictures.append("<img src='" + url3 + "' alt=''>");*/
-
-      }
-
-    };
-
-    /**
      * [_getRandomPhrase description]
      * @return {String} [description]
      */
@@ -850,7 +822,8 @@ $(document).ready(function () {
           tmp.getUTCDate(), 
           tmp.getUTCHours(), 
           tmp.getUTCMinutes(), 
-          tmp.getUTCSeconds() 
+          tmp.getUTCSeconds(),
+          tmp.getUTCMilliseconds()
           );
         var utc = dateUTC.getTime();
         var dateTZ = new Date(utc + _geoData.rawOffset * 1000);
@@ -859,9 +832,15 @@ $(document).ready(function () {
         var cd = parseInt(dateTZ.format("HH")) * 3600 + 
           parseInt(dateTZ.format("MM")) * 60 + 
           parseInt(dateTZ.format("ss"));
+
         RTAPP.setCoord(cd);
-        if (!(cd % 1800)) {
+
+        if (!(cd % 1800) && _nextSecond) {
           RTAPP.speak("It is " + dateTZ.format("HH:MM") + " now.");
+          RTAPP.log(cd, "incTime");
+          _nextSecond = false;
+        } else if (!(cd % 1800)) {
+          _nextSecond = true;
         }
 
         var tod = Math.floor(parseInt(dateTZ.format("HH")) / 3);
@@ -910,20 +889,10 @@ $(document).ready(function () {
       var x = 30 * Math.cos(tmp) + 50;
       var y = 80 * Math.sin(tmp);
 
-      // TODO:: Change this shit!!!
       var day,
       night;
-      if (t >= 0 && t <= 21600) {
-        night = Math.sin(tmp);
-      } else if (t > 21600 && t <= 43600) {
-        night = Math.abs(Math.sin(tmp) + 0.5);
-      }
-      day = Math.sin(2 * tmp);
-      night = 1 - day;
-      if (day < 0 ) {
-        night = Math.abs(Math.sin(2 * tmp));
-        day = 1 - night;
-      }
+      night = Math.abs(tmp / Math.PI + 1.5);
+      day = 1 - night;
       $day.css("opacity", day);
       $night.css("opacity", night);
 
@@ -970,7 +939,10 @@ $(document).ready(function () {
 
     var _speakText = function (text) {
       text = text || "";
-      _cacheSpeech.push(text);
+
+      text.split(". ").forEach(function (item, i) {
+        _cacheSpeech.push(item);
+      });
     };
 
     var _speech = function (text) {
@@ -981,15 +953,17 @@ $(document).ready(function () {
         speech = new SpeechSynthesisUtterance();
         speech.voiceURI = 'native';
         speech.volume = 1;
-        speech.rate = 1;
+        speech.rate = 0.1;
         speech.pitch = 2;
         speech.text = text;
         speech.lang = 'en-US';
         speech.onend = function (e) {
-          _cacheSpeech.shift();
-          if (_cacheSpeech.length > 0) {
-            _availableSpeech.can = true;
-          }
+          setTimeout(function () {
+            _cacheSpeech.shift();
+            if (_cacheSpeech.length > 0) {
+              _availableSpeech.can = true;
+            }
+          }, 200);
         }
         speechSynthesis.speak(speech);
       }
@@ -1008,7 +982,7 @@ $(document).ready(function () {
       init:         _init,
       clear:        _clear,
       stop:         _stop,
-      start:         _start,
+      start:        _start,
       log:          _logMessage,
       info:         _infoMessage,
       warn:         _warnMessage,
@@ -1019,10 +993,8 @@ $(document).ready(function () {
       setTimezone:  _setTimezone,
       setWeather:   _setWeather,
       setCoord:     _setCoordinateToObject,
-      setPicture:   _setPicture,
       setTime:      _setTime,
       setCity:      _setCity,
-      geo:          _geoData,
       speak:        _speakText,
     }
   }());

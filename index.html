@@ -12,54 +12,89 @@
   <link rel="icon" type="image/x-icon" href="./src/images/favicon.png">
   <link rel="stylesheet" href="./assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="./src/css/style.css">
+  <link rel="stylesheet" href="./assets/joyride/joyride-2.1.css">
 </head>
 <body class="stop">
 
-  <div id="day"></div>
-  <div id="night"></div>
+  <div id="loading">
+    <h1 class="text-center">RT App</h1>
+    <h2 class="text-center">DREC, 2014 &copy;</h2>
+  </div>
+
 
   <div id="searchDiv">
-    <form class="navbar-from input-group input-group-lg col-lg-4 center-by-margin" role="search" id="search">
+    <form class="navbar-from input-group input-group-lg col-lg-5 center-by-margin" role="search" id="search">
+      <span class="input-group-btn">
+        <button type="button" class="btn btn-default" id="currWeather" data-toggle="tooltip" data-placement="bottom" title="Current temperature">
+          0 &deg;C
+        </button>
+        <button type="button" class="btn btn-default" id="currLoc" data-toggle="tooltip" data-placement="bottom" title="Current city">
+          Location
+        </button>
+      </span>
       <input type="text" class="form-control input-lg" id="searchInput" placeholder="Type new location (city)">
       <span class="input-group-btn">
-        <button type="submit" class="btn btn-default">
+        <button type="submit" class="btn btn-default" data-toggle="tooltip" data-placement="bottom" title="Search">
           <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
         </button>
-        <button type="reset" class="btn btn-default">
+        <button type="reset" id="resetSearch" class="btn btn-default" data-toggle="tooltip" data-placement="bottom" title="Reset app">
           <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>
         </button>
       </span>
     </form>
   </div>
 
-  <div id="currWeatherDiv">
-    <div class="btn-group btn-group-lg" role="group" aria-label="">
-      <button type="button" class="btn btn-default" id="currWeather">
-        0 &deg;C
-      </button>
-      <button type="button" class="btn btn-default" id="currLoc">
-        Location
-      </button>
-    </div>
+  <div id="currTimeDiv">
+    <span id="currTime">00:00:00</span>
   </div>
 
-  <div id="currTimeDiv">
-    <button class="btn btn-default btn-lg" id="currTime">00:00:00</button>
-  </div>
+    <!-- Tip Content -->
+  <ol id="RTAppTour">
+    <li data-id="currTime" data-text="Next">
+      <h3 class="popover-title">Stop #1</h3>
+      <div class="popover-content">It's the time! The dictor will announce current time on a click.</div>
+    </li>
+    <li data-id="searchInput" data-text="Next">
+      <h3 class="popover-title">Stop #2</h3>
+      <div class="popover-content">You can search any city your like. Or town. Or village, like Dolgoprudny here... The time shown is the current time for this city.</div>
+    </li>
+    <li data-id="currLoc" data-text="Next">
+      <h3 class="popover-title">Stop #3</h3>
+      <div class="popover-content">Current town. And yes, everything is still clickable and hearable. Pretty awesome, huh?</div>
+    </li>
+    <li data-id="currWeather" data-text="Next">
+      <h3 class="popover-title">Stop #4</h3>
+      <div class="popover-content">The current temperature.</div>
+    </li>
+    <li data-id="resetSearch" data-text="Next">
+      <h3 class="popover-title">Stop #5</h3>
+      <div class="popover-content">Cancelling the seacrh and getting back home.</div>
+    </li>
+    <li data-id="pole" data-text="Next" data-options="tipLocation:top">
+      <h3 class="popover-title">Stop #6</h3>
+      <div class="popover-content">Oh! Look at this thing - it's a vane! It shows how strong the wind is.</div>
+    </li>
+    <li data-id="currTime" data-text="OK!">
+      <h3 class="popover-title">The end!</h3>
+      <div class="popover-content">If everything is clear, then common! The Real-Time is waiting for you.</div>
+    </li>
+  </ol>
+
+
+  <div id="clouds"></div>
 
   <div id="sun"></div>
   <div id="moon"></div>
 
   <div id="pole" class=""><div id="vleuger"></div></div>
 
-  <div id="answer"></div>
-
-  <div id="pictures"></div>
+  <div id="day"></div>
+  <div id="night"></div>
 
   <script src="./assets/jquery/js/jquery-2.1.1.min.js"></script>
+  <script src="./assets/joyride/jquery.joyride-2.1.js"></script>
   <script src="./assets/bootstrap/js/bootstrap.min.js"></script>
-  <script src="./src/js/date.js"></script>
+  <script src="./assets/date/date.js"></script>
   <script src="./src/js/init.js"></script>
-  <script src="./src/js/main.js"></script>
 </body>
 </html>
