@@ -262,6 +262,7 @@ $(document).ready(function () {
       _availableBrowserSpeech = ('speechSynthesis' in window);
 
       RTAPP.speak("Hallo! You are welcomed by Real Time App.");
+      RTAPP.speak(_getRandomPhrase());
 
       _weatherInterval = setInterval(_setWeather, 1800000);
 
@@ -290,6 +291,8 @@ $(document).ready(function () {
       } else {
           RTAPP.log("Sorry! No Web Storage support..", "locStrg");
       }
+
+      $('[data-toggle="popover"]').popover();
 
     };
 
@@ -364,11 +367,11 @@ $(document).ready(function () {
 
       $vleuger.hover(function () {
         $("#pole").popover({
-          content: "<div><strong>Speed:</strong> <span class='speed'>" + 
+          content: "<div><b>Speed:</b> <span class='speed'>" + 
             _geoData.speed + "</span> mps</div>" + 
-            "<div><strong>Direction:</strong> <span class='deg_speed'>" +
+            "<div><b>Direction:</b> <span class='deg_speed'>" +
             _geoData.deg_speed.abbr + "</span></div>",
-          title: "Wind",
+          title: "<b>Wind</b>",
           html: true,
           placement: "top",
           trigger: "hover",
@@ -411,40 +414,22 @@ $(document).ready(function () {
           TEMP[_geoData.temp_phrase].phrase);
       });
 
-      var _skyObjects = function (event) {
+      $sun.on("click", function (event) {
         RTAPP.speak("Today sunrise is in " + _geoData.sunrise + 
             "and sunset is in " + _geoData.sunset + ".");
-      };
-
-      $sun.on("click", _skyObjects);
-      $moon.on("click", _skyObjects);
-      $sun.hover(function () {
-        $(this).popover({
-          content: "<div><strong>Sunset:</strong> <span class='sunset'>" + 
-            _geoData.sunset + "</span></div>" + 
-            "<div><strong>Sunrise:</strong> <span class='sunrise'>" +
-            _geoData.sunrise + "</span></div>",
-          title: "Sun",
-          html: true,
-          placement: "left",
-          trigger: "hover",
-        });
-      }, function () {
-        $(this).popover("destroy");
       });
-      $moon.hover(function () {
-        $(this).popover({
-          content: "<div><strong>Sunset:</strong> <span class='sunset'>" + 
+      $sun.hover(function () {
+        console.log($(this));
+        $sun.popover({
+          content: "<div><b>Sunset:</b> <span class='sunset'>" + 
             _geoData.sunset + "</span></div>" + 
-            "<div><strong>Sunrise:</strong> <span class='sunrise'>" +
+            "<div><b>Sunrise:</b> <span class='sunrise'>" +
             _geoData.sunrise + "</span></div>",
-          title: "Moon",
+          title: "<b>Sun</b>",
           html: true,
           placement: "left",
           trigger: "hover",
         });
-      }, function () {
-        $(this).popover("destroy");
       });
 
     };
@@ -544,6 +529,8 @@ $(document).ready(function () {
           } else if (data['status'] == "ZERO_RESULTS") {
             RTAPP.warn("No available results for query: '" + name + "'.", 
               "getData");
+            RTAPP.speak("Sorry! No available results for this query. " +
+              "Try other.");
           }
         },
         error: function () {
