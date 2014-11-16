@@ -3,6 +3,11 @@ Real Time App
 
 Project MIPT Hackathon, which takes place in November 15-16.
 
+Description
+-----------
+
+Web application for people with eye difficult.  
+
 Members of team
 ---------------
 
@@ -15,6 +20,7 @@ Libraries
 
 * [jQuery][jquery]
 * [Twitter Bootstrap][bootstrap]
+* [Yahoo! Weather API][yahoo]
 
 [sigorilla]: https://github.com/Sigorilla "Sigorilla"
 [nipel-crumple]: https://github.com/Nipel-Crumple "Nipel-Crumple"
@@ -22,3 +28,4 @@ Libraries
 [jVectorMap]: http://jvectormap.com/ "jVectorMap"
 [bootstrap]: http://getbootstrap.com/ "Bootstrap"
 [jquery]: http://jquery.com/ "jQuery"
+[yahoo]: https://weather.yahoo.com/ "Yahoo! Weather"

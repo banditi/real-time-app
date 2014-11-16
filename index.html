@@ -9,27 +9,56 @@
   <![endif]-->
   <meta name="author" content="Banditi">
   <meta name="description" content="Real Time App">
-  <link rel="icon" type="image/x-icon" href="./src/images/favicon.ico">
+  <link rel="icon" type="image/x-icon" href="./src/images/favicon.png">
   <link rel="stylesheet" href="./assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="./src/css/style.css">
 </head>
-<body>
-  <div id="loading"></div>
+<body class="stop">
 
-  <div class="container">
-    <h2>
-      <span>Time: </span>
-      <span id="currTime"></span>
-    </h2>
-    <h2>
-      <span>Location: </span>
-      <span id="currLoc"></span>
-    </h2>
+  <div id="day"></div>
+  <div id="night"></div>
+
+  <div id="searchDiv">
+    <form class="navbar-from input-group input-group-lg col-lg-4 center-by-margin" role="search" id="search">
+      <input type="text" class="form-control input-lg" id="searchInput" placeholder="Type new location (city)">
+      <span class="input-group-btn">
+        <button type="submit" class="btn btn-default">
+          <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+        </button>
+        <button type="reset" class="btn btn-default">
+          <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>
+        </button>
+      </span>
+    </form>
   </div>
-  
+
+  <div id="currWeatherDiv">
+    <div class="btn-group btn-group-lg" role="group" aria-label="">
+      <button type="button" class="btn btn-default" id="currWeather">
+        0 &deg;C
+      </button>
+      <button type="button" class="btn btn-default" id="currLoc">
+        Location
+      </button>
+    </div>
+  </div>
+
+  <div id="currTimeDiv">
+    <button class="btn btn-default btn-lg" id="currTime">00:00:00</button>
+  </div>
+
+  <div id="sun"></div>
+  <div id="moon"></div>
+
+  <div id="pole" class=""><div id="vleuger"></div></div>
+
+  <div id="answer"></div>
+
+  <div id="pictures"></div>
 
   <script src="./assets/jquery/js/jquery-2.1.1.min.js"></script>
   <script src="./assets/bootstrap/js/bootstrap.min.js"></script>
+  <script src="./src/js/date.js"></script>
   <script src="./src/js/init.js"></script>
   <script src="./src/js/main.js"></script>
 </body>
