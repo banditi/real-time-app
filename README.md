@@ -11,9 +11,9 @@ Web application for people with eye difficult.
 Members of team
 ---------------
 
-* Stepanov Igor via [Sigorilla][]
-* Varnavskij Vadim via [Nipel-Crumple][]
-* Kuznecov Egor via [kyza1994][]
+* Igor Stepanov via [Sigorilla][]
+* Vadim Varnavskij via [Nipel-Crumple][]
+* Egor Kuznecov via [kyza1994][]
 
 Libraries
 ---------
