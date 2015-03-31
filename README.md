@@ -1,7 +1,7 @@
 Real Time App
 ==================
 
-Project MIPT Hackathon, which takes place in November 15-16.
+Project MIPT Hackathon, which takes place in 15th-16th of November, 2014.
 
 Description
 -----------
